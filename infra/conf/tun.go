@@ -91,6 +91,11 @@ const (
 func GetAvailableTunName() (string, error) {
 	interfaces, err := net.Interfaces()
 	if err != nil {
+		// Android 11+ forbids apps to enumerate interfaces (netlinkrib: permission denied);
+		// there the TUN comes from VpnService as a file descriptor and its name is cosmetic.
+		if runtime.GOOS == "android" {
+			return tunNamePrefix + strconv.Itoa(minTunIndex), nil
+		}
 		return "", fmt.Errorf("fail to get system interface information: %w", err)
 	}
 
